@@ -1,0 +1,290 @@
+﻿<Activity mc:Ignorable="sap sap2010 sads" x:Class="OrderProcess.OrderWF"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:local="clr-namespace:OrderProcess"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mca="clr-namespace:Microsoft.CSharp.Activities;assembly=System.Activities"
+ xmlns:s="clr-namespace:System;assembly=mscorlib"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="OrderInfo" Type="InArgument(local:Order)" />
+    <x:Property Name="TotalAmount" Type="OutArgument(x:Decimal)" />
+  </x:Members>
+  <sap2010:ExpressionActivityEditor.ExpressionActivityEditor>C#</sap2010:ExpressionActivityEditor.ExpressionActivityEditor>
+  <sap2010:WorkflowViewState.IdRef>OrderProcess.Workflow1_1</sap2010:WorkflowViewState.IdRef>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>System.Text</x:String>
+      <x:String>OrderProcess</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>Microsoft.CSharp</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>System.Runtime.Serialization</AssemblyReference>
+      <AssemblyReference>System.ServiceModel</AssemblyReference>
+      <AssemblyReference>System.ServiceModel.Activities</AssemblyReference>
+      <AssemblyReference>System.Xaml</AssemblyReference>
+      <AssemblyReference>System.Xml</AssemblyReference>
+      <AssemblyReference>System.Xml.Linq</AssemblyReference>
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>OrderProcess</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="local:ItemInfo" Name="ItemDetails">
+        <Variable.Default>
+          <mca:CSharpValue x:TypeArguments="local:ItemInfo">ItemDetails</mca:CSharpValue>
+        </Variable.Default>
+      </Variable>
+      <Variable x:TypeArguments="x:Decimal" Name="Discount" />
+    </Sequence.Variables>
+    <WriteLine sap2010:WorkflowViewState.IdRef="WriteLine_1" Text="Order Received" />
+    <Assign DisplayName="InitializeTotal" sap2010:WorkflowViewState.IdRef="Assign_1">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+        </OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpValue x:TypeArguments="x:Decimal">0</mca:CSharpValue>
+        </InArgument>
+      </Assign.Value>
+    </Assign>
+    <ForEach x:TypeArguments="local:OrderItem" DisplayName="Accumulate Order Items" sap2010:WorkflowViewState.IdRef="ForEach`1_1">
+      <ForEach.Values>
+        <InArgument x:TypeArguments="scg:IEnumerable(local:OrderItem)">
+          <mca:CSharpValue x:TypeArguments="scg:IEnumerable(local:OrderItem)">OrderInfo.Items</mca:CSharpValue>
+        </InArgument>
+      </ForEach.Values>
+      <ActivityAction x:TypeArguments="local:OrderItem">
+        <ActivityAction.Argument>
+          <DelegateInArgument x:TypeArguments="local:OrderItem" Name="item" />
+        </ActivityAction.Argument>
+        <Sequence DisplayName="Lookup Item" sap2010:WorkflowViewState.IdRef="Sequence_2">
+          <local:LookupItem sap2010:WorkflowViewState.IdRef="LookupItem_1">
+            <local:LookupItem.Item>
+              <OutArgument x:TypeArguments="local:ItemInfo">
+                <mca:CSharpReference x:TypeArguments="local:ItemInfo">ItemDetails</mca:CSharpReference>
+              </OutArgument>
+            </local:LookupItem.Item>
+            <local:LookupItem.ItemCode>
+              <InArgument x:TypeArguments="x:String">
+                <mca:CSharpValue x:TypeArguments="x:String">item.ItemCode</mca:CSharpValue>
+              </InArgument>
+            </local:LookupItem.ItemCode>
+          </local:LookupItem>
+          <Assign sap2010:WorkflowViewState.IdRef="Assign_7">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:Decimal">
+                <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+              </OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:Decimal">
+                <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount + (item.Quantity * ItemDetails.Price)</mca:CSharpValue>
+              </InArgument>
+            </Assign.Value>
+          </Assign>
+        </Sequence>
+      </ActivityAction>
+    </ForEach>
+    <WriteLine DisplayName="Display Item Total" sap2010:WorkflowViewState.IdRef="WriteLine_3">
+      <InArgument x:TypeArguments="x:String">
+        <mca:CSharpValue x:TypeArguments="x:String">$"The item total is: ${TotalAmount}"</mca:CSharpValue>
+      </InArgument>
+    </WriteLine>
+    <InvokeMethod DisplayName="Calculate Discount" sap2010:WorkflowViewState.IdRef="InvokeMethod_1" MethodName="ComputeDiscount" TargetType="local:OrderDiscount">
+      <InvokeMethod.Result>
+        <OutArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpReference x:TypeArguments="x:Decimal">Discount</mca:CSharpReference>
+        </OutArgument>
+      </InvokeMethod.Result>
+      <InArgument x:TypeArguments="local:Order">
+        <mca:CSharpValue x:TypeArguments="local:Order">OrderInfo</mca:CSharpValue>
+      </InArgument>
+      <InArgument x:TypeArguments="x:Decimal">
+        <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpValue>
+      </InArgument>
+    </InvokeMethod>
+    <Assign DisplayName="Subtract Discount" sap2010:WorkflowViewState.IdRef="Assign_8">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+        </OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount - Discount</mca:CSharpValue>
+        </InArgument>
+      </Assign.Value>
+    </Assign>
+    <TryCatch DisplayName="Check Stock" sap2010:WorkflowViewState.IdRef="TryCatch_1">
+      <TryCatch.Try>
+        <ForEach x:TypeArguments="local:OrderItem" DisplayName="ForEach&lt;OrderItem&gt;" sap2010:WorkflowViewState.IdRef="ForEach`1_2">
+          <ForEach.Values>
+            <InArgument x:TypeArguments="scg:IEnumerable(local:OrderItem)">
+              <mca:CSharpValue x:TypeArguments="scg:IEnumerable(local:OrderItem)">OrderInfo.Items</mca:CSharpValue>
+            </InArgument>
+          </ForEach.Values>
+          <ActivityAction x:TypeArguments="local:OrderItem">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="local:OrderItem" Name="item" />
+            </ActivityAction.Argument>
+            <If DisplayName="If Out of Stock" sap2010:WorkflowViewState.IdRef="If_1">
+              <If.Condition>
+                <InArgument x:TypeArguments="x:Boolean">
+                  <mca:CSharpValue x:TypeArguments="x:Boolean">item.ItemCode == "12346"</mca:CSharpValue>
+                </InArgument>
+              </If.Condition>
+              <If.Then>
+                <Throw sap2010:WorkflowViewState.IdRef="Throw_1">
+                  <InArgument x:TypeArguments="s:Exception">
+                    <mca:CSharpValue x:TypeArguments="s:Exception">new OrderProcess.OutOfStockException($"Item Code: {item.ItemCode}")</mca:CSharpValue>
+                  </InArgument>
+                </Throw>
+              </If.Then>
+            </If>
+          </ActivityAction>
+        </ForEach>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="local:OutOfStockException" sap2010:WorkflowViewState.IdRef="Catch`1_1">
+          <ActivityAction x:TypeArguments="local:OutOfStockException">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="local:OutOfStockException" Name="exception" />
+            </ActivityAction.Argument>
+            <WriteLine sap2010:WorkflowViewState.IdRef="WriteLine_4">
+              <InArgument x:TypeArguments="x:String">
+                <mca:CSharpValue x:TypeArguments="x:String">$"Item is out of stock - {exception.Message}"</mca:CSharpValue>
+              </InArgument>
+            </WriteLine>
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
+    <Switch x:TypeArguments="x:String" DisplayName="Handling Charges" sap2010:WorkflowViewState.IdRef="Switch`1_1">
+      <Switch.Default>
+        <Assign sap2010:WorkflowViewState.IdRef="Assign_2">
+          <Assign.To>
+            <OutArgument x:TypeArguments="x:Decimal">
+              <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+            </OutArgument>
+          </Assign.To>
+          <Assign.Value>
+            <InArgument x:TypeArguments="x:Decimal">
+              <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount + 5.0m</mca:CSharpValue>
+            </InArgument>
+          </Assign.Value>
+        </Assign>
+      </Switch.Default>
+      <Switch.Expression>
+        <InArgument x:TypeArguments="x:String">
+          <mca:CSharpValue x:TypeArguments="x:String">OrderInfo.ShippingMethod</mca:CSharpValue>
+        </InArgument>
+      </Switch.Expression>
+      <Assign x:Key="NextDay" sap2010:WorkflowViewState.IdRef="Assign_3">
+        <Assign.To>
+          <OutArgument x:TypeArguments="x:Decimal">
+            <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+          </OutArgument>
+        </Assign.To>
+        <Assign.Value>
+          <InArgument x:TypeArguments="x:Decimal">
+            <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount+15.0m</mca:CSharpValue>
+          </InArgument>
+        </Assign.Value>
+      </Assign>
+      <Assign x:Key="2ndDay" sap2010:WorkflowViewState.IdRef="Assign_4">
+        <Assign.To>
+          <OutArgument x:TypeArguments="x:Decimal">
+            <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+          </OutArgument>
+        </Assign.To>
+        <Assign.Value>
+          <InArgument x:TypeArguments="x:Decimal">
+            <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount+10.0m</mca:CSharpValue>
+          </InArgument>
+        </Assign.Value>
+      </Assign>
+    </Switch>
+    <Assign DisplayName="Freight Charges" sap2010:WorkflowViewState.IdRef="Assign_5">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpReference x:TypeArguments="x:Decimal">TotalAmount</mca:CSharpReference>
+        </OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Decimal">
+          <mca:CSharpValue x:TypeArguments="x:Decimal">TotalAmount + (OrderInfo.TotalWeight * 0.5m)</mca:CSharpValue>
+        </InArgument>
+      </Assign.Value>
+    </Assign>
+    <WriteLine sap2010:WorkflowViewState.IdRef="WriteLine_2">
+      <InArgument x:TypeArguments="x:String">
+        <mca:CSharpValue x:TypeArguments="x:String">$"The total amount is: ${TotalAmount}"</mca:CSharpValue>
+      </InArgument>
+    </WriteLine>
+    <sads:DebugSymbol.Symbol>dyxDOlxHaXRcQmVnaW5uaW5nV0ZcT3JkZXJQcm9jZXNzXE9yZGVyV0YueGFtbDIuA/MBDgIBATILMloCAQI3BTdWAwGoATgFQw4DAZ0BRAVpDwIBfGoFbhECAXZvBXsUAgFmfAWHAQ4CAVuIAQWzARACAT+0AQXgAQ4CARjhAQXsAQ4CAQ3tAQXxARECAQc3QzdTAwGpAUALQEsDAaMBOws7XQMBngFHC0dwAwGYAU4JZxQCAX1sCWxrAgF3dgl2UwIBcXILcloCAWx5CXlTAgFnhAELhAFgAgFhfwt/XQIBXIoBCaMBEwIBR6sBDa8BGQIBQMUBC8UBYQIBGcgBB9MBEAIBNNQBB98BEAIBKbYBCcEBEgIBHukBC+kBdgIBE+QBC+QBXQIBDu8BCe8BbQIBCE8LWh4DAYsBWwtmFAIBfo0BD40BdAIBVpQBDaEBEgIBSK0BEa0BfAIBQdABDdABXQIBOssBDcsBXwIBNdwBDdwBXQIBL9cBDdcBXwIBKr4BD74BYAIBJLkBD7kBYQIBH1cRV1wDAZIBUhFSaAMBjAFjEWOBAQMBhQFeEV5jAgF/lwETlwFqAgFJmwERnwEZAgFPnQEVnQGZAQIBUA==</sads:DebugSymbol.Symbol>
+  </Sequence>
+  <sap2010:WorkflowViewState.ViewStateManager>
+    <sap2010:ViewStateManager>
+      <sap2010:ViewStateData Id="WriteLine_1" sap:VirtualizedContainerService.HintSize="477.6,62.4" />
+      <sap2010:ViewStateData Id="Assign_1" sap:VirtualizedContainerService.HintSize="477.6,62.4" />
+      <sap2010:ViewStateData Id="LookupItem_1" sap:VirtualizedContainerService.HintSize="243.2,22.4" />
+      <sap2010:ViewStateData Id="Assign_7" sap:VirtualizedContainerService.HintSize="243.2,62.4" />
+      <sap2010:ViewStateData Id="Sequence_2" sap:VirtualizedContainerService.HintSize="265.6,249.6">
+        <sap:WorkflowViewStateService.ViewState>
+          <scg:Dictionary x:TypeArguments="x:String, x:Object">
+            <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+          </scg:Dictionary>
+        </sap:WorkflowViewStateService.ViewState>
+      </sap2010:ViewStateData>
+      <sap2010:ViewStateData Id="ForEach`1_1" sap:VirtualizedContainerService.HintSize="477.6,400.8" />
+      <sap2010:ViewStateData Id="WriteLine_3" sap:VirtualizedContainerService.HintSize="477.6,62.4" />
+      <sap2010:ViewStateData Id="InvokeMethod_1" sap:VirtualizedContainerService.HintSize="477.6,131.2" />
+      <sap2010:ViewStateData Id="Assign_8" sap:VirtualizedContainerService.HintSize="477.6,62.4" />
+      <sap2010:ViewStateData Id="Throw_1" sap:VirtualizedContainerService.HintSize="200,22.4" />
+      <sap2010:ViewStateData Id="If_1" sap:VirtualizedContainerService.HintSize="464,212" />
+      <sap2010:ViewStateData Id="ForEach`1_2" sap:VirtualizedContainerService.HintSize="494.4,363.2" />
+      <sap2010:ViewStateData Id="WriteLine_4" sap:VirtualizedContainerService.HintSize="210.4,62.4" />
+      <sap2010:ViewStateData Id="Catch`1_1" sap:VirtualizedContainerService.HintSize="400,22.4">
+        <sap:WorkflowViewStateService.ViewState>
+          <scg:Dictionary x:TypeArguments="x:String, x:Object">
+            <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+            <x:Boolean x:Key="IsPinned">False</x:Boolean>
+          </scg:Dictionary>
+        </sap:WorkflowViewStateService.ViewState>
+      </sap2010:ViewStateData>
+      <sap2010:ViewStateData Id="TryCatch_1" sap:VirtualizedContainerService.HintSize="477.6,187.2" />
+      <sap2010:ViewStateData Id="Assign_2" sap:VirtualizedContainerService.HintSize="243.2,62.4" />
+      <sap2010:ViewStateData Id="Assign_3" sap:VirtualizedContainerService.HintSize="243.2,62.4" />
+      <sap2010:ViewStateData Id="Assign_4" sap:VirtualizedContainerService.HintSize="243.2,62.4" />
+      <sap2010:ViewStateData Id="Switch`1_1" sap:VirtualizedContainerService.HintSize="477.6,166.4" />
+      <sap2010:ViewStateData Id="Assign_5" sap:VirtualizedContainerService.HintSize="477.6,62.4" />
+      <sap2010:ViewStateData Id="WriteLine_2" sap:VirtualizedContainerService.HintSize="477.6,62.4" />
+      <sap2010:ViewStateData Id="Sequence_1" sap:VirtualizedContainerService.HintSize="500,1744.8">
+        <sap:WorkflowViewStateService.ViewState>
+          <scg:Dictionary x:TypeArguments="x:String, x:Object">
+            <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+          </scg:Dictionary>
+        </sap:WorkflowViewStateService.ViewState>
+      </sap2010:ViewStateData>
+      <sap2010:ViewStateData Id="OrderProcess.Workflow1_1" sap:VirtualizedContainerService.HintSize="540,1824.8" />
+    </sap2010:ViewStateManager>
+  </sap2010:WorkflowViewState.ViewStateManager>
+</Activity>
